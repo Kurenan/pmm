@@ -124,54 +124,57 @@ void PmmModuleDataLog::debugPrintLogHeader()
 // Float variables are printed with a maximum of 3 decimal digits. You may change it if you like.
 void PmmModuleDataLog::debugPrintLogContent()
 {
-    static char buffer[DATA_LOG_DEBUG_BUFFER_LEN]; // Static for optimization
-    buffer[0] = {'\0'};      // As the above is static, we need to reset the first char so snprintf will work properly.
+    #if PMM_DEBUG && PMM_DATA_LOG_DEBUG
+        static char buffer[DATA_LOG_DEBUG_BUFFER_LEN]; // Static for optimization
+        buffer[0] = {'\0'};      // As the above is static, we need to reset the first char so snprintf will work properly.
 
-    for (unsigned variableIndex = 0; variableIndex < mDataLogGroupCore.getNumberOfVariables(); variableIndex ++)
-    {
-        if (variableIndex > 0)
-            snprintf(buffer, DATA_LOG_DEBUG_BUFFER_LEN, "%s ", buffer);
-
-        snprintf(buffer, DATA_LOG_DEBUG_BUFFER_LEN, "%s[%u) ", buffer, variableIndex);
-
-        switch(mDataLogGroupCore.getVariableTypeArray()[variableIndex])
+        for (unsigned variableIndex = 0; variableIndex < mDataLogGroupCore.getNumberOfVariables(); variableIndex ++)
         {
-            case MODULE_DATA_LOG_TYPE_FLOAT: // first as it is more common
-                snprintf(buffer, DATA_LOG_DEBUG_BUFFER_LEN, "%s%.2f", buffer, *(float*)    (mDataLogGroupCore.getVariableAdrsArray()[variableIndex]));
-                break;
-            case MODULE_DATA_LOG_TYPE_UINT32:
-                snprintf(buffer, DATA_LOG_DEBUG_BUFFER_LEN, "%s%lu",  buffer, *(uint32_t*) (mDataLogGroupCore.getVariableAdrsArray()[variableIndex]));
-                break;
-            case MODULE_DATA_LOG_TYPE_INT32:
-                snprintf(buffer, DATA_LOG_DEBUG_BUFFER_LEN, "%s%li",  buffer, *(int32_t*)  (mDataLogGroupCore.getVariableAdrsArray()[variableIndex]));
-                break;
-            case MODULE_DATA_LOG_TYPE_UINT8:
-                snprintf(buffer, DATA_LOG_DEBUG_BUFFER_LEN, "%s%u",   buffer, *(uint8_t*)  (mDataLogGroupCore.getVariableAdrsArray()[variableIndex]));
-                break;
-            case MODULE_DATA_LOG_TYPE_INT8:
-                snprintf(buffer, DATA_LOG_DEBUG_BUFFER_LEN, "%s%i",   buffer, *(int8_t*)   (mDataLogGroupCore.getVariableAdrsArray()[variableIndex]));
-                break;
-            case MODULE_DATA_LOG_TYPE_UINT16:
-                snprintf(buffer, DATA_LOG_DEBUG_BUFFER_LEN, "%s%u",   buffer, *(uint16_t*) (mDataLogGroupCore.getVariableAdrsArray()[variableIndex]));
-                break;
-            case MODULE_DATA_LOG_TYPE_INT16:
-                snprintf(buffer, DATA_LOG_DEBUG_BUFFER_LEN, "%s%i",   buffer, *(int16_t*)  (mDataLogGroupCore.getVariableAdrsArray()[variableIndex]));
-                break;
-            case MODULE_DATA_LOG_TYPE_UINT64:
-                snprintf(buffer, DATA_LOG_DEBUG_BUFFER_LEN, "%s%llu", buffer, *(uint64_t*) (mDataLogGroupCore.getVariableAdrsArray()[variableIndex]));
-                break;
-            case MODULE_DATA_LOG_TYPE_INT64:
-                snprintf(buffer, DATA_LOG_DEBUG_BUFFER_LEN, "%s%lli", buffer, *(int64_t*)  (mDataLogGroupCore.getVariableAdrsArray()[variableIndex]));
-                break;
-            case MODULE_DATA_LOG_TYPE_DOUBLE:
-                snprintf(buffer, DATA_LOG_DEBUG_BUFFER_LEN, "%s%.2f", buffer, *(double*)   (mDataLogGroupCore.getVariableAdrsArray()[variableIndex]));
-                break;
-            default:    // If none above,
-                snprintf(buffer, DATA_LOG_DEBUG_BUFFER_LEN, "%s%s",   buffer, "ERROR HERE!");
-                break;
-        } // switch end
-        snprintf(buffer, DATA_LOG_DEBUG_BUFFER_LEN, "%s]", buffer);
-    } // for loop end
-    Serial.println(buffer);
+            if (variableIndex > 0)
+                snprintf(buffer, DATA_LOG_DEBUG_BUFFER_LEN, "%s ", buffer);
+
+            snprintf(buffer, DATA_LOG_DEBUG_BUFFER_LEN, "%s[%u) ", buffer, variableIndex);
+
+            switch(mDataLogGroupCore.getVariableTypeArray()[variableIndex])
+            {
+                case MODULE_DATA_LOG_TYPE_FLOAT: // first as it is more common
+                    snprintf(buffer, DATA_LOG_DEBUG_BUFFER_LEN, "%s%.2f", buffer, *(float*)    (mDataLogGroupCore.getVariableAdrsArray()[variableIndex]));
+                    break;
+                case MODULE_DATA_LOG_TYPE_UINT32:
+                    snprintf(buffer, DATA_LOG_DEBUG_BUFFER_LEN, "%s%lu",  buffer, *(uint32_t*) (mDataLogGroupCore.getVariableAdrsArray()[variableIndex]));
+                    break;
+                case MODULE_DATA_LOG_TYPE_INT32:
+                    snprintf(buffer, DATA_LOG_DEBUG_BUFFER_LEN, "%s%li",  buffer, *(int32_t*)  (mDataLogGroupCore.getVariableAdrsArray()[variableIndex]));
+                    break;
+                case MODULE_DATA_LOG_TYPE_UINT8:
+                    snprintf(buffer, DATA_LOG_DEBUG_BUFFER_LEN, "%s%u",   buffer, *(uint8_t*)  (mDataLogGroupCore.getVariableAdrsArray()[variableIndex]));
+                    break;
+                case MODULE_DATA_LOG_TYPE_INT8:
+                    snprintf(buffer, DATA_LOG_DEBUG_BUFFER_LEN, "%s%i",   buffer, *(int8_t*)   (mDataLogGroupCore.getVariableAdrsArray()[variableIndex]));
+                    break;
+                case MODULE_DATA_LOG_TYPE_UINT16:
+                    snprintf(buffer, DATA_LOG_DEBUG_BUFFER_LEN, "%s%u",   buffer, *(uint16_t*) (mDataLogGroupCore.getVariableAdrsArray()[variableIndex]));
+                    break;
+                case MODULE_DATA_LOG_TYPE_INT16:
+                    snprintf(buffer, DATA_LOG_DEBUG_BUFFER_LEN, "%s%i",   buffer, *(int16_t*)  (mDataLogGroupCore.getVariableAdrsArray()[variableIndex]));
+                    break;
+                case MODULE_DATA_LOG_TYPE_UINT64:
+                    snprintf(buffer, DATA_LOG_DEBUG_BUFFER_LEN, "%s%llu", buffer, *(uint64_t*) (mDataLogGroupCore.getVariableAdrsArray()[variableIndex]));
+                    break;
+                case MODULE_DATA_LOG_TYPE_INT64:
+                    snprintf(buffer, DATA_LOG_DEBUG_BUFFER_LEN, "%s%lli", buffer, *(int64_t*)  (mDataLogGroupCore.getVariableAdrsArray()[variableIndex]));
+                    break;
+                case MODULE_DATA_LOG_TYPE_DOUBLE:
+                    snprintf(buffer, DATA_LOG_DEBUG_BUFFER_LEN, "%s%.2f", buffer, *(double*)   (mDataLogGroupCore.getVariableAdrsArray()[variableIndex]));
+                    break;
+                default:    // If none above,
+                    snprintf(buffer, DATA_LOG_DEBUG_BUFFER_LEN, "%s%s",   buffer, "ERROR HERE!");
+                    break;
+            } // switch end
+            snprintf(buffer, DATA_LOG_DEBUG_BUFFER_LEN, "%s]", buffer);
+        } // for loop end
+        Serial.println(buffer);
+        Serial.println();
+    #endif
 } // end of function debugPrintLogContent()
 #undef DATA_LOG_DEBUG_BUFFER_LEN

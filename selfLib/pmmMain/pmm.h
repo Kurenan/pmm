@@ -59,6 +59,9 @@ private:
     PmmPortsReception   mPmmPortsReception;
     PmmModuleDataLog    mPmmModuleDataLog;
 
+    bool mGpsIsFirstAltitude;
+    bool mGpsIsFirstCoord;
+    bool mGpsIsFirstDate;
 };
 
 #endif

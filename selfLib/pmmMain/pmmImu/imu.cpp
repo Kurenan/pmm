@@ -11,6 +11,7 @@
 
 #include "pmmConsts.h"
 #include "pmmDebug.h"
+#include "pmmUnits.h" // For coord32ToFloat()
 #include "pmmImu/imu.h"
 
 
@@ -123,7 +124,12 @@ int  PmmImu::setDeclination(float degrees)
     return 0;
 }
 
-// Uses coordinates to get declination, using another my another code.
+
+// Uses coordinates to get declination, using my another code.
+int  PmmImu::setDeclination(uint32_t latitude, uint32_t longitude)
+{
+    return setDeclination(coord32ToFloat(latitude), coord32ToFloat(longitude));
+}
 int  PmmImu::setDeclination(float latitude, float longitude)
 {
     float declination;

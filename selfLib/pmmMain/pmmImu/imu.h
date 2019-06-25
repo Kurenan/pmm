@@ -3,7 +3,8 @@
  *
  * By Henrique Bruno Fantauzzi de Almeida (aka SrBrahma) - Minerva Rockets, UFRJ, Rio de Janeiro - Brazil */
 
-
+#define PMM_CALIBRATE_BAROMETER_USING_INITIAL_ALTITUDE
+#define PMM_ALTITUDE_AT_STARTING_PLACE
 
 #ifndef PMM_IMU_h
 #define PMM_IMU_h
@@ -74,6 +75,7 @@ public:
     int    setDeclination(float degrees);
     int    getDecByCoord (float* returnDeclination, float latitude, float longitude);
     int    setDeclination(float latitude, float longitude); // Uses coordinates to get declination, using another my another code.
+    int    setDeclination(uint32_t latitude, uint32_t longitude); // Same as above, but using the uint32_t type for the coordinates.
     float  getDeclination();
 
     void   getMagnetometer(float destinationArray[3]);

@@ -17,32 +17,38 @@ class PmmGps
 {
 
 public:
+
     PmmGps();
 
-    int init();
-    int update();
+    enum class InitRtn {Ok, Error};
+    InitRtn init();
+
+    enum class UpdateRtn {OkNoData, GotFix, NotWorking}; // Warning [FirstCoord]: It wasn't tested that the GPS always gives a valid first position.
+    // If you notice it happened, make some sort of filter for the first results, until the update can return the FirstCoord.
+    UpdateRtn update();
 
     // Sleep mode https://forum.arduino.cc/index.php?topic=497410.15
 
     pmmGpsStructType* getGpsStructPtr();
-    pmmGpsStructType  getGpsStruct();
-    gps_fix*          getFixPtr();
-
-    //void doSomeWork();
+    pmmGpsStructType  getGpsStruct   ();
+    gps_fix*          getFixPtr      ();
+    gps_fix           getFix         ();
 
 private:
+
     unsigned mGpsIsWorking;
 
-    NMEAGPS mGps; // This object parses received characters into the gps.fix() data structure
+    NMEAGPS mNMEAGPS; // This object parses received characters into the gps.fix() data structure
+
+    gps_fix mFix;
+
+    pmmGpsStructType mPmmGpsStruct;
 
     #if (defined GPS_FIX_SPEED && defined GPS_FIX_ALTITUDE) // https://stackoverflow.com/a/38474505
         unsigned long mLastReadMillis;
         unsigned long mTempLastReadMillis;
         float mLastAltitude;
     #endif
-
-    gps_fix mFix;
-    pmmGpsStructType mPmmGpsStruct;
 
 };
 

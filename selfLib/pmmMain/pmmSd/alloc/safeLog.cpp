@@ -2,7 +2,7 @@
 
 #include "pmmDebug.h"
 #include "pmmSd/alloc/alloc.h"
-#include "pmmSd/alloc/pmmSdSafeLog.h"
+#include "pmmSd/alloc/safeLog.h"
 
 
 // These are files which are:

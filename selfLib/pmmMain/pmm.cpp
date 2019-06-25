@@ -23,7 +23,7 @@
 
 #include "pmm.h"
 
-
+// All
 
 Pmm::Pmm() {}
 
@@ -31,11 +31,38 @@ Pmm::Pmm() {}
 
 int Pmm::init(bool skipDebugDelay)
 {
+    mGpsIsFirstAltitude = mGpsIsFirstCoord = mGpsIsFirstDate = true;
     mMainLoopCounter = 0;
     mMillis          = millis();
 
     mSessionId = 0x0; // Later, use the EEPROM.
 
+    initDebug();
+
+    mPmmTelemetry.init();
+    mPmmSd.init(mSessionId);
+
+    mPmmGps.init();
+
+    mPmmImu.init();
+
+    mPmmModuleDataLog.init(&mPmmTelemetry, &mPmmSd, mSessionId, 0, &mMainLoopCounter, &mMillis);
+            mPmmModuleDataLog.getDataLogGroupCore()->addGps(mPmmGps.getGpsStructPtr());
+            mPmmModuleDataLog.getDataLogGroupCore()->addImu(mPmmImu.getImuStructPtr());
+
+
+
+    mPmmModuleMessageLog.init(&mMainLoopCounter, &mPmmTelemetry, &mPmmSd); // PmmModuleMessageLog
+    mPmmPortsReception.init(&mPmmModuleDataLog, &mPmmModuleMessageLog);    // PmmPortsReception
+
+
+    setSystemMode(MODE_DEPLOYED);
+
+    mMillis = millis(); // Again!
+}
+
+void initDebug()
+{
     #if PMM_DEBUG   // Debug
         Serial.begin(9600);     // Initialize the debug Serial Port. The value doesn't matter, as Teensy will set it to its maximum. https://forum.pjrc.com/threads/27290-Teensy-Serial-Print-vs-Arduino-Serial-Print
 
@@ -49,43 +76,11 @@ int Pmm::init(bool skipDebugDelay)
         if (Serial)
             debugMorePrintf("Serial initialized!\n");
     #endif
+}
 
-
-    #if PMM_USE_TELEMETRY         // Telemetry
-        mPmmTelemetry.init();
-    #endif
-
-    #if PMM_USE_SD                // SD
-        mPmmSd.init(mSessionId);
-    #endif
-
-    #if PMM_USE_GPS               // GPS
-        mPmmGps.init();
-    #endif
-
-    #if PMM_USE_IMU               // IMU
-        mPmmImu.init();
-    #endif
-
-    // PmmModuleDataLog
-    mPmmModuleDataLog.init(&mPmmTelemetry, &mPmmSd, mSessionId, 0, &mMainLoopCounter, &mMillis);
-
-        #if PMM_USE_GPS
-            mPmmModuleDataLog.getDataLogGroupCore()->addGps(mPmmGps.getGpsStructPtr());
-        #endif
-
-        #if PMM_USE_IMU
-            mPmmModuleDataLog.getDataLogGroupCore()->addImu(mPmmImu.getImuStructPtr());
-        #endif
-
-
-    mPmmModuleMessageLog.init(&mMainLoopCounter, &mPmmTelemetry, &mPmmSd); // PmmModuleMessageLog
-    mPmmPortsReception.init(&mPmmModuleDataLog, &mPmmModuleMessageLog);    // PmmPortsReception
-
-
-
-
-    #if PMM_DEBUG
+void printMotd() // "Message of the day" (MOTD). Just a initial text upon the startup, with a optional requirement of a key press.
+{
+        #if PMM_DEBUG
         PMM_DEBUG_PRINTLN("\n =-=-=-=-=-=-=-=- PMM - Minerva Rockets - UFRJ =-=-=-=-=-=-=-=-\n\n");
 
         #if PMM_DATA_LOG_DEBUG
@@ -108,55 +103,35 @@ int Pmm::init(bool skipDebugDelay)
                 delay(PMM_DEBUG_WAIT_X_MILLIS_AFTER_INIT);
             }
         }
+        PMM_DEBUG_PRINTLN("Main loop started!");
         #endif
     #endif
-
-    setSystemMode(MODE_DEPLOYED);
-
-    mMillis = millis(); // Again!
-
-    PMM_DEBUG_PRINTLN("Main loop started!");
-    return 0;
 }
-
-
-
 
 // Where EVERYTHING happens!
 void Pmm::update()
 {
-
-
     mPmmImu.update();
+    if (mPmmGps.update() == PmmGps::UpdateRtn::GotFix)
+    {
+        if (mGpsIsFirstCoord && mPmmGps.getFixPtr()->valid.location) {
+            mPmmImu.setDeclination(mPmmGps.getGpsStructPtr()->latitude, mPmmGps.getGpsStructPtr()->longitude);
+            mGpsIsFirstCoord = false; }
 
+        // if (mGpsIsFirstAltitude && mPmmGps.getFixPtr()->valid.altitude) {
+        //     // calibrate barometer to get real altitude
+        //     mGpsIsFirstAltitude = false; }
 
-    #if PMM_USE_GPS
-        if (mPmmGps.update())
-            if (mPmmGps.getFixPtr()->valid.location)
-                mPmmImu.setDeclination(mPmmGps.getGpsStructPtr()->latitude, mPmmGps.getGpsStructPtr()->longitude);
-    #endif
-
-
+        // if (mGpsIsFirstDate && mPmmGps.getFixPtr()->valid.date) {
+        //     // save the date as message.
+        //     mGpsIsFirstDate = false; }
+    }
     mPmmModuleDataLog.update();
+    mPmmModuleDataLog.debugPrintLogContent(); // There is on the start #if PMM_DEBUG && PMM_DATA_LOG_DEBUG
 
-    #if PMM_DEBUG && PMM_DATA_LOG_DEBUG
-        mPmmModuleDataLog.debugPrintLogContent();
-        Serial.println();
-    #endif
-
-
-    #if PMM_USE_TELEMETRY
-        // This happens here, at "pmm.cpp" and not in the pmmTelemetry, because the PmmPortsXYZ includes the pmmTelemetry, and if pmmTelemetry
-        // included the PmmPortzXYZ, that would causa a circular dependency, and the code wouldn't compile.
-        if(mPmmTelemetry.updateReception())
-            mPmmPortsReception.receivedPacket(mPmmTelemetry.getReceivedPacketAllInfoStructPtr());
-        mPmmTelemetry.updateTransmission();
-    #endif
-
-
-
-    // if (mMainLoopCounter % 100 == 0) { debugMorePrintf("Time between 100 cycles = millis() - timePrint");  timePrint = millis(); }
-
+    if(mPmmTelemetry.updateReception())
+        mPmmPortsReception.receivedPacket(mPmmTelemetry.getReceivedPacketAllInfoStructPtr());
+    mPmmTelemetry.updateTransmission();
 
     mMainLoopCounter++;
     mMillis = millis();
@@ -169,9 +144,6 @@ void Pmm::update()
 
 int Pmm::setSystemMode(pmmSystemState systemMode)
 {
-    mPmmModuleDataLog.setSystemMode(systemMode);
-    mPmmImu.setSystemMode(systemMode);
-
     return 0;
 }
 

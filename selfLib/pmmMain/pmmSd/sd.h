@@ -7,8 +7,8 @@
 
 #include <SdFat.h>
 #include "pmmConsts.h"
-#include "pmmSd/alloc/pmmSdSafeLog.h"
-#include "pmmSd/split/pmmSdSplit.h"
+#include "pmmSd/alloc/safeLog.h"
+#include "pmmSd/split/split.h"
 
 #define PMM_SD_BASE_DIRECTORY               "Minerva Rockets - PMM"
 
