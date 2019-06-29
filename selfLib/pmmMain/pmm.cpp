@@ -3,62 +3,29 @@
 // https://forum.pjrc.com/threads/39158-Using-SdFat-to-acces-Teensy-3-6-SD-internal-card-(-amp-with-audio-board)
 
 #include "pmmConsts.h"
-
-#include "pmmHealthSignals/healthSignals.h"
-
-#include "pmmEeprom/eeprom.h"
-
-#include "pmmTelemetry/telemetry.h"
-#include "pmmModules/portsReception.h"
-#include "pmmSd/sd.h"
-#include "pmmImu/imu.h"
-#include "pmmGps/gps.h"
+#include "pmmExtraCodes.h"
 
 
-// Modules
-#include "pmmModules/dataLog/dataLog.h"
-#include "pmmModules/messageLog/messageLog.h"
-
-#include "pmmDebug.h"   // For debug prints
-
-#include "pmm.h"
-
-// All
 
 Pmm::Pmm() {}
 
 
 
-int Pmm::init(bool skipDebugDelay)
+int Pmm::init()
 {
-    mGpsIsFirstAltitude = mGpsIsFirstCoord = mGpsIsFirstDate = true;
-    mMainLoopCounter = 0;
-    mMillis          = millis();
-
-    mSessionId = 0x0; // Later, use the EEPROM.
-
-    initDebug();
-
-    mPmmTelemetry.init();
-    mPmmSd.init(mSessionId);
-
-    mPmmGps.init();
-
-    mPmmImu.init();
-
-    mPmmModuleDataLog.init(&mPmmTelemetry, &mPmmSd, mSessionId, 0, &mMainLoopCounter, &mMillis);
-            mPmmModuleDataLog.getDataLogGroupCore()->addGps(mPmmGps.getGpsStructPtr());
-            mPmmModuleDataLog.getDataLogGroupCore()->addImu(mPmmImu.getImuStructPtr());
+    runExtraCodes(); // No need to comment this function. To disable it, change PMM_EXTRA_CODES_ENABLE on pmmConsts.h
+    initDebug();     // No need to comment this function. To disable it, change PMM_DEBUG on pmmConsts.h
 
 
 
-    mPmmModuleMessageLog.init(&mMainLoopCounter, &mPmmTelemetry, &mPmmSd); // PmmModuleMessageLog
-    mPmmPortsReception.init(&mPmmModuleDataLog, &mPmmModuleMessageLog);    // PmmPortsReception
+    #if PMM_SYSTEM_ROUTINE == PMM_ROUTINE_ROCKET_AVIONIC
 
+    #elif PMM_SYSTEM_ROUTINE == PMM_ROUTINE_PDA
 
-    setSystemMode(MODE_DEPLOYED);
+    #else
+    #    error [PMM] No routine defined. Compilation failed.
+    #endif
 
-    mMillis = millis(); // Again!
 }
 
 void initDebug()

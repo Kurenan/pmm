@@ -23,8 +23,7 @@ public:
     enum class InitRtn {Ok, Error};
     InitRtn init();
 
-    enum class UpdateRtn {OkNoData, GotFix, NotWorking}; // Warning [FirstCoord]: It wasn't tested that the GPS always gives a valid first position.
-    // If you notice it happened, make some sort of filter for the first results, until the update can return the FirstCoord.
+    enum class UpdateRtn {OkNoData, GotFix, NotWorking};
     UpdateRtn update();
 
     // Sleep mode https://forum.arduino.cc/index.php?topic=497410.15
