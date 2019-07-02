@@ -22,9 +22,7 @@
 
 class PmmTelemetry
 {
-
 public:
-
     PmmTelemetry();
 
     int init();
@@ -47,7 +45,6 @@ public:
     int isPacketBeingSent();
 
 private:
-
     typedef struct
     {
         telemetryQueuePriorities thisPriority;  // For getting the priority by the struct.

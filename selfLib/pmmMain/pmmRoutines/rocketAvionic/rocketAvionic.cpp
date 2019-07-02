@@ -117,76 +117,8 @@ void RoutineRocketAvionic::sR_Landed()
 }
 
 
-// The trigger can be readden as
-// [truePercentToTrigger]% of [CheckType] [AreRelationThan] [checkValue] units [perTimeUnit]
-// Ex: "90% of the FirstDerivatives AreGreatherThan 10 units/second"
-// Be careful that the constructor will alloc (mMinTotalMillis / minMillisPerMeasure) * 8 bytes.
-// Be sure that this class suits your needs.
-class CustomVariableChecker
-{
-public:
-    typedef struct {
-        float    value;
-        uint32_t microsBetween;
-    } Measure;
-
-    enum class CheckType {Values, FirstDerivatives, SecondDerivatives};
-    enum class Relation  {AreLesserThan, AreGreaterThan};
-    enum class Time      {DontApply, Second, Millisecond, Microsecond};
-
-    CustomVariableChecker(uint32_t minMicrosBetween, uint32_t maxMicrosBetween, uint32_t mMinTotalMicrosToTrigger,
-
-                          float truePercentToTrigger, CheckType checkType, Relation relation, float checkValue, Time perTimeUnit);
-
-    bool addMeasureAndCheck(float measure);
-
-private:
-    Measure *mArray;
-    uint32_t lastMicros;
-
-    uint32_t mMinMicrosBetween;
-    uint32_t mMaxMicrosBetween;
-
-    uint16_t mStartIndex;
-    uint16_t mLength;
 
 
-};
 
-CustomVariableChecker::CustomVariableChecker(uint32_t minMicrosBetween, uint32_t maxMicrosBetween,
-                                             uint32_t mMinTotalMicrosToTrigger, float positivesPercentToTrigger,
-                                             CheckType checkType, Relation relation, float checkValue, Time perTimeUnit)
-{
-    mMinMicrosBetween = minMicrosBetween;
-    mMaxMicrosBetween = maxMicrosBetween;
-
-    mArray = (Measure*) malloc(minMicrosBetween * mMinTotalMicrosToTrigger * sizeof(Measure));
-
-    mStartIndex = 0;
-    mLength     = 0;
-
-
-}
-
-bool CustomVariableChecker::addMeasureAndCheck(float measure)
-{
-    uint32_t nowMicros = micros();
-
-    if (mLength > 0)
-    {
-        uint32_t microsBetween = nowMicros - mLastMicros;
-
-        // If the time between measures is invalid, ignore the measure.
-        if ((microsBetween < mMinMicrosBetween) || (microsBetween > mMaxMicrosBetween))
-            return 1;
-
-        mArray[mStartIndex] = {measure, microsBetween};
-
-
-    }
-
-    mLastMicros = nowMicros;
-
-}
 
 #endif

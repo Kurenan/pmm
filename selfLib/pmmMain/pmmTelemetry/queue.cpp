@@ -27,7 +27,7 @@ int PmmTelemetry::addPacketToQueue(PacketToBeSent* packetToBeSent)
     // Now there is a new item on the queue!
     queueStructPtr->remainingPacketsOnQueue++;
 
-    buildPacket (queueStructPtr->packet[newItemIndex], &queueStructPtr->packetLength[newItemIndex], packetToBeSent);
+    buildPacket(queueStructPtr->packet[newItemIndex], &queueStructPtr->packetLength[newItemIndex], packetToBeSent);
 
     tlmDebugMorePrintf("New packet added to <%s> priority queue, on position <%u>.\n", getQueuePriorityString(packetToBeSent->getPriority()), newItemIndex)
 
@@ -93,14 +93,9 @@ const char* PmmTelemetry::getQueuePriorityString(telemetryQueuePriorities priori
 
     switch (priority)
     {
-        case PMM_TLM_QUEUE_PRIORITY_HIGH:
-            return HIGH_PRIORITY_STRING;
-
-        case PMM_TLM_QUEUE_PRIORITY_NORMAL:
-            return NORMAL_PRIORITY_STRING;
-
-        case PMM_TLM_QUEUE_PRIORITY_LOW:
-            return LOW_PRIORITY_STRING;
+        case PMM_TLM_QUEUE_PRIORITY_HIGH  : return HIGH_PRIORITY_STRING;
+        case PMM_TLM_QUEUE_PRIORITY_NORMAL: return NORMAL_PRIORITY_STRING;
+        case PMM_TLM_QUEUE_PRIORITY_LOW   : return LOW_PRIORITY_STRING;
 
         default:    // If for some mystic reason it goes wrong...
             advPrintf("Invalid priority.\n")
