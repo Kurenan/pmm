@@ -33,8 +33,9 @@ public:
 
     int init();     // Must be executed, so the object is passed. Also, inits everything.
     int update();   // Gets all the sensors
+    enum class ImuMode {Sleep, Active};
+    int setImuMode(ImuMode mode);
 
-    int setSystemMode(pmmSystemState systemMode);
 
     pmmImuStructType  getImuStruct();
     pmmImuStructType* getImuStructPtr();

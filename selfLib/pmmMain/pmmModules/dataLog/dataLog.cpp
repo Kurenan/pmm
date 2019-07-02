@@ -24,11 +24,11 @@ int PmmModuleDataLog::init(PmmTelemetry* pmmTelemetry, PmmSd* pmmSd, uint8_t sys
     mUpdateModeReadyCounter   = mUpdateModeDeployedCounter = 0;
     mUpdateDataLogInfoCounter = 0;
 
-    mPmmTelemetryPtr       = pmmTelemetry;
-    mPmmSdPtr              = pmmSd;
-    mPmmSdSafeLogPtr       = mPmmSdPtr->getSafeLog();
+    mPmmTelemetryPtr          = pmmTelemetry;
+    mPmmSdPtr                 = pmmSd;
+    mPmmSdSafeLogPtr          = mPmmSdPtr->getSafeLog();
 
-    mSystemSession      = systemSession;
+    mSystemSession            = systemSession;
 
     mDataLogGroupCore.init(mPmmTelemetryPtr, mPmmSdPtr, mPmmSdSafeLogPtr, mSystemSession, 0);
     mDataLogGroupCore.addBasicInfo(mainLoopCounterPtr, timeMillisPtr);
@@ -46,61 +46,53 @@ int PmmModuleDataLog::update()
     if (!mDataLogGroupCore.getIsGroupLocked())
         return 0;
 
-    switch (mSystemMode)
-    {
-        case MODE_SLEEP:
-            return 0;
+    // switch (mSystemMode)
+    // {
+    //     case MODE_SLEEP:
+    //         return 0;
 
-        case MODE_READY:
-            if (mUpdateModeReadyCounter < 5)
-            {
-                if (mPmmTelemetryPtr->getTotalPacketsRemainingOnQueue() == 0)
-                    if(!mDataLogGroupCore.sendDataLogInfo(mUpdateDataLogInfoCounter++))
-                        mUpdateModeReadyCounter++;
-            }
-            else
-            {
-                if (mPmmTelemetryPtr->getTotalPacketsRemainingOnQueue() == 0)
-                    if(!mDataLogGroupCore.sendDataLog())
-                        mUpdateModeReadyCounter = 0;
-            }
-            break;
+    //     case MODE_READY:
+    //         if (mUpdateModeReadyCounter < 5)
+    //         {
+    //             if (mPmmTelemetryPtr->getTotalPacketsRemainingOnQueue() == 0)
+    //                 if(!mDataLogGroupCore.sendDataLogInfo(mUpdateDataLogInfoCounter++))
+    //                     mUpdateModeReadyCounter++;
+    //         }
+    //         else
+    //         {
+    //             if (mPmmTelemetryPtr->getTotalPacketsRemainingOnQueue() == 0)
+    //                 if(!mDataLogGroupCore.sendDataLog())
+    //                     mUpdateModeReadyCounter = 0;
+    //         }
+    //         break;
 
-        case MODE_DEPLOYED:
-        case MODE_FINISHED:
-            if (mUpdateModeDeployedCounter < 1) // Send lots of DataLog before the DataLogInfo!
-            {
-                // This 'if' is to always send the newest dataLog package. However, some other package may still be sent first if added to the queue with a
-                // higher priority.
-                if (mPmmTelemetryPtr->getTotalPacketsRemainingOnQueue() == 0)
-                    if (!mDataLogGroupCore.sendDataLog())
-                        mUpdateModeDeployedCounter++;   // Only increase in successful sents.
-            }
-            else // Every once a while send a DataLogInfo packet!
-            {
-                mDataLogGroupCore.sendDataLogInfo(mUpdateDataLogInfoCounter++);
-                mUpdateModeDeployedCounter = 0;
-            }
+    //     case MODE_DEPLOYED:
+    //     case MODE_FINISHED:
+    //         if (mUpdateModeDeployedCounter < 1) // Send lots of DataLog before the DataLogInfo!
+    //         {
+    //             // This 'if' is to always send the newest dataLog package. However, some other package may still be sent first if added to the queue with a
+    //             // higher priority.
+    //             if (mPmmTelemetryPtr->getTotalPacketsRemainingOnQueue() == 0)
+    //                 if (!mDataLogGroupCore.sendDataLog())
+    //                     mUpdateModeDeployedCounter++;   // Only increase in successful sents.
+    //         }
+    //         else // Every once a while send a DataLogInfo packet!
+    //         {
+    //             mDataLogGroupCore.sendDataLogInfo(mUpdateDataLogInfoCounter++);
+    //             mUpdateModeDeployedCounter = 0;
+    //         }
 
-            break;
-    }   // End of switch
+    //         break;
+    // }   // End of switch
 
-    if (mUpdateDataLogInfoCounter >= mDataLogGroupCore.getDataLogInfoPackets())
-        mUpdateDataLogInfoCounter = 0;
+    // if (mUpdateDataLogInfoCounter >= mDataLogGroupCore.getDataLogInfoPackets())
+    //     mUpdateDataLogInfoCounter = 0;
 
-    mDataLogGroupCore.saveOwnDataLog();
-
-    return 0;
-}
-
-
-
-int PmmModuleDataLog::setSystemMode(pmmSystemState systemMode)
-{
-    mSystemMode = systemMode;
+    // mDataLogGroupCore.saveOwnDataLog();
 
     return 0;
 }
+
 
 
 // Debug! -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-

@@ -6,6 +6,11 @@
 
 #include <pmmConsts.h>
 
+#if PMM_SYSTEM_ROUTINE == PMM_ROUTINE_ROCKET_AVIONIC
+
+
+
+
 #include "pmmHealthSignals/healthSignals.h"
 
 
@@ -19,6 +24,8 @@
 #include "pmmModules/messageLog/messageLog.h"
 #include "pmmModules/portsReception.h"
 
+#include "pmmRoutines/rocketAvionic/recovery/recovery.h"
+
 
 
 class RoutineRocketAvionic
@@ -28,7 +35,7 @@ public:
 
     RoutineRocketAvionic();
 
-    int  init();
+    void init();
     void update();
 
 
@@ -64,4 +71,5 @@ private:
     bool mGpsIsFirstDate;
 };
 
+#endif
 #endif

@@ -7,6 +7,13 @@
 #ifndef PMM_RECOVERY_h
 #define PMM_RECOVERY_h
 
+class Recovery
+{
+    public:
+        bool checkDrogueCondition();
+    private:
 
+
+};
 
 #endif

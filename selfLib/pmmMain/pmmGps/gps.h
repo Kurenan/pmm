@@ -34,6 +34,8 @@ public:
     gps_fix           getFix         ();
 
 private:
+    void fixToOurType(gps_fix &mFix, pmmGpsStructType &mPmmGpsStruct);
+    void debugPrintFix(Print &Serial, const NMEAGPS &mNMEAGPS, const gps_fix &mFix);
 
     unsigned mGpsIsWorking;
 

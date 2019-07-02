@@ -4,19 +4,29 @@
 #ifndef PMM_h
 #define PMM_h
 
-#include <pmmConsts.h>
+#include "pmmConsts.h"
+#include "pmmRoutines/rocketAvionic/rocketAvionic.h"
 
+void initDebug();
+void printMotd();
 
 class Pmm
 {
-
 public:
 
     Pmm();
 
-    void init(bool skipDebugDelay = false);
+    void init();
     void update();
 
+private:
+    #if   PMM_SYSTEM_ROUTINE == PMM_ROUTINE_ROCKET_AVIONIC
+        RoutineRocketAvionic mRoutineRocketAvionic;
+    #elif PMM_SYSTEM_ROUTINE == PMM_ROUTINE_PDA
+
+    #else
+    #    error [PMM] No routine defined. Compilation failed.
+    #endif
 };
 
 #endif

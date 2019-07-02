@@ -1,7 +1,7 @@
 #include <stdint.h> // For uint8_t type
 #include <EEPROM.h>
 
-#include "pmmEeprom/pmmEeprom.h"
+#include "pmmEeprom/eeprom.h"
 
 int PmmEeprom::init()
 {

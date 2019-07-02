@@ -7,7 +7,7 @@
 #include <Arduino.h> // For PROGMEM. Also includes uint32_t type, so no stdint.h include needed.
 
 #include <pmmConsts.h>
-#include "pmmHealthBasicSignals/pmmHealthBasicSignals.h"
+#include "pmmHealthSignals/healthSignals.h"
 
 PmmHealthSignals::PmmHealthSignals()
 {

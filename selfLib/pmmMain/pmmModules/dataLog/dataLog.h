@@ -6,8 +6,8 @@
 #ifndef PMM_MODULE_DATA_LOG_h
 #define PMM_MODULE_DATA_LOG_h
 
-#include "pmmTelemetry/telemetry.h"      // For transmitting
-#include "pmmSd/sd.h"                    // For storing
+#include "pmmTelemetry/telemetry.h"                 // For transmitting
+#include "pmmSd/sd.h"                               // For storing
 #include "pmmModules/dataLog/dataLogGroupCore.h"
 #include "pmmModules/dataLog/dataLogInfo/logInfo.h" // For specific defines
 
@@ -36,7 +36,7 @@ public:
     int  init(PmmTelemetry* pmmTelemetry, PmmSd* pmmSd, uint8_t systemSession, uint8_t dataLogInfoId, uint32_t* mainLoopCounterPtr, uint32_t* timeMillisPtr);
     int  update();   // Will automatically sendDataLog, sendDataLogInfo and store on the memories.
 
-    int  setSystemMode(pmmSystemState systemMode);
+
 
     // Reception
     int  receivedDataLog(receivedPacketAllInfoStructType* packetInfo);
@@ -53,15 +53,11 @@ private:
     int  saveReceivedDataLog(uint8_t groupData[], uint8_t groupLength, uint8_t dataLogId, uint8_t sourceAddress, uint8_t sourceSession);
     int  saveReceivedDataLogInfo(uint8_t data[], uint16_t dataLength, uint8_t sourceAddress, uint8_t sourceSession, uint8_t dataLogId, uint8_t groupLength, uint8_t currentPart, uint8_t totalParts);
 
+    PmmModuleDataLogGroupCore mDataLogGroupCore;
 
     PmmTelemetry*  mPmmTelemetryPtr;
     PmmSd       *  mPmmSdPtr;
     PmmSdSafeLog*  mPmmSdSafeLogPtr;
-
-    pmmSystemState mSystemMode;
-
-    PmmModuleDataLogGroupCore mDataLogGroupCore;
-
 
     uint8_t  mSystemSession;
 

@@ -62,7 +62,7 @@ PmmGps::UpdateRtn PmmGps::update()
 }
 
 // All info below on https://github.com/SlashDevin/NeoGPS/blob/master/extras/doc/Data%20Model.md !!
-static void fixToOurType(gps_fix &mFix, pmmGpsStructType &mPmmGpsStruct)
+void PmmGps::fixToOurType(gps_fix &mFix, pmmGpsStructType &mPmmGpsStruct)
 {
     #ifdef GPS_FIX_LOCATION
         mPmmGpsStruct.latitude        = mFix.latitude();
@@ -97,7 +97,7 @@ static void fixToOurType(gps_fix &mFix, pmmGpsStructType &mPmmGpsStruct)
     // option to change UTC
 }
 
-static void debugPrintFix(Print &Serial, const NMEAGPS &mNMEAGPS, const gps_fix &mFix)
+void PmmGps::debugPrintFix(Print &Serial, const NMEAGPS &mNMEAGPS, const gps_fix &mFix)
 {
     #if PMM_DEBUG && PMM_DEBUG_MORE && PMM_GPS_DEBUG_MORE
         gpsDebugMorePrintf("GPS updated. trace_all(): ")

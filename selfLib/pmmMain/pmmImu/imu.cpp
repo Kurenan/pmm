@@ -42,7 +42,6 @@ int  PmmImu::update()
     int returnValue = 0;
 
     #if PMM_USE_IMU
-
         if (updateMpu())
             returnValue |= 0b001;
 
@@ -51,7 +50,6 @@ int  PmmImu::update()
 
         if (updateBmp())
             returnValue |= 0b100;
-
     #endif
 
     return returnValue;
@@ -81,16 +79,14 @@ int  PmmImu::initMpu()
 
 int PmmImu::updateMpu()
 {
-    if (mMpuIsWorking)
-    {
-        mMpu.readNormalizedAccelerometer(mPmmImuStruct.accelerometerArray);
-        mMpu.readNormalizedGyroscope(mPmmImuStruct.gyroscopeArray);
-        mPmmImuStruct.temperatureMpu = mMpu.readTemperature();
-        imuDebugMorePrintf("Mpu updated!\n")
-        return 0;
-    }
-    else
+    if (!mMpuIsWorking)
         return 1;
+
+    mMpu.readNormalizedAccelerometer(mPmmImuStruct.accelerometerArray);
+    mMpu.readNormalizedGyroscope(mPmmImuStruct.gyroscopeArray);
+    mPmmImuStruct.temperatureMpu = mMpu.readTemperature();
+    imuDebugMorePrintf("Mpu updated!\n")
+    return 0;
 }
 
 
@@ -104,12 +100,12 @@ int  PmmImu::initMagnetometer()
         return 1;
     }
 
+    mMagnetometerIsWorking = 1;
+
     mMagnetometer.setSamples(HMC5883L_SAMPLES_8);
     mMagnetometer.setDataRate(HMC5883L_DATARATE_75HZ);
 
-    mMagnetometerIsWorking = 1;
     imuDebugMorePrintf("Magnetometer initialized successfully!\n")
-
     return 0;
 }
 
@@ -118,11 +114,7 @@ int  PmmImu::getDecByCoord(float* returnDeclination, float latitude, float longi
     return ::getDecByCoord(returnDeclination, latitude, longitude);
 }
 
-int  PmmImu::setDeclination(float degrees)
-{
-    mMagnetometer.setDeclination(degrees);
-    return 0;
-}
+
 
 
 // Uses coordinates to get declination, using my another code.
@@ -136,6 +128,12 @@ int  PmmImu::setDeclination(float latitude, float longitude)
     getDecByCoord(&declination, latitude, longitude);
 
     mMagnetometer.setDeclination(declination);
+    return 0;
+}
+
+int  PmmImu::setDeclination(float degrees)
+{
+    mMagnetometer.setDeclination(degrees);
     return 0;
 }
 
@@ -154,18 +152,10 @@ int  PmmImu::initBmp()  //BMP085 Setup
         advPrintf("Barometer initialization failed!\n")
         return 1;
     }
-
+    mBarometerIsWorking = 1;
     setReferencePressure(20);
 
-    //mPlotter.Begin(); // start plotter
-    //mPlotter.AddTimeGraph("PMM altitude", 1000, "rawAltitude(m)", mPmmImuStruct.altitude, "semiFiltered(m)", mFiltered2, "filteredAltitude(m)", mPmmImuStruct.filteredAltitude);
-    //mPlotter.SetColor(0, "red", "blue", "yellow");
-    mFilteredAltitudeLastMillis = millis();
-
-    mBarometerIsWorking = 1;
-
     imuDebugMorePrintf("Barometer initialized successfully!\n")
-
     return 0;
 }
 
@@ -202,76 +192,55 @@ int  PmmImu::setReferencePressure(unsigned samples)
 
 
 
-
-
-
-
-
-
-
-
 int PmmImu::updateMagnetometer() // READ https://www.meccanismocomplesso.org/en/arduino-magnetic-magnetic-magnetometer-hmc5883l/
 {
-    if (mMagnetometerIsWorking)
-    {
-        mMagnetometer.readNormalized(mPmmImuStruct.magnetometerArray);
-        imuDebugMorePrintf("Magnetometer updated!\n");
-        return 0;
-    }
-    else
+    if (!mMagnetometerIsWorking)
         return 1;
+
+    mMagnetometer.readNormalized(mPmmImuStruct.magnetometerArray);
+    imuDebugMorePrintf("Magnetometer updated!\n");
+    return 0;
 }
 
 
 
 int PmmImu::updateBmp()
 {
-    // read calibrated pressure value in hecto Pascals (hPa)
-    if (mBarometerIsWorking)
-    {
-        switch(mBarometer.isDataReady())
-        {
-            case DATA_READY_TEMPERATURE:
-                mBarometer.getTemperature(&mPmmImuStruct.temperatureBmp);
-                break;
-
-            case DATA_READY_PRESSURE:
-                mBarometer.getPressure(&mPmmImuStruct.pressure);
-                mPmmImuStruct.altitude = mBarometer.pressureToAltitude(mReferencePressure, mPmmImuStruct.pressure);
-                break;
-        }
-
-        imuDebugMorePrintf("Barometer updated!\n")
-        return 0;
-    }
-    else
+    if (!mBarometerIsWorking)
         return 1;
+
+    // read calibrated pressure value in hecto Pascals (hPa)
+    switch(mBarometer.isDataReady())
+    {
+        case DATA_READY_TEMPERATURE:
+            mBarometer.getTemperature(&mPmmImuStruct.temperatureBmp);
+            break;
+
+        case DATA_READY_PRESSURE:
+            mBarometer.getPressure(&mPmmImuStruct.pressure);
+            mPmmImuStruct.altitude = mBarometer.pressureToAltitude(mReferencePressure, mPmmImuStruct.pressure);
+            break;
+    }
+
+    imuDebugMorePrintf("Barometer updated!\n")
+    return 0;
 }
 
 
 
-int PmmImu::setSystemMode(pmmSystemState systemMode)
+// There can be applied another methods of power saving. Future!
+int PmmImu::setImuMode(ImuMode mode)
 {
-    switch (systemMode)
+    switch (mode)
     {
-        case MODE_SLEEP:
+        case ImuMode::Sleep:
             mMpu.setSleepEnabled(true);
             mMagnetometer.setMeasurementMode(HMC5883L_IDLE);
             break;
 
-        case MODE_READY:
+        case ImuMode::Active:
             mMpu.setSleepEnabled(false);
             mMagnetometer.setMeasurementMode(HMC5883L_CONTINOUS);
-            break;
-
-        case MODE_DEPLOYED:
-            mMpu.setSleepEnabled(false);
-            mMagnetometer.setMeasurementMode(HMC5883L_CONTINOUS);
-            break;
-
-        case MODE_FINISHED:
-            mMpu.setSleepEnabled(true);
-            mMagnetometer.setMeasurementMode(HMC5883L_IDLE);
             break;
     }
     return 0;
@@ -279,70 +248,20 @@ int PmmImu::setSystemMode(pmmSystemState systemMode)
 
 
 
-void PmmImu::getAccelerometer(float destinationArray[3])
-{
-    memcpy(destinationArray, mPmmImuStruct.accelerometerArray, 3);
-}
-void PmmImu::getGyroscope(float destinationArray[3])
-{
-    memcpy(destinationArray, mPmmImuStruct.gyroscopeArray, 3);
-}
-float PmmImu::getMpuTemperature()
-{
-    return mPmmImuStruct.temperatureMpu;
-}
-void PmmImu::getMagnetometer(float destinationArray[3])
-{
-    memcpy(destinationArray, mPmmImuStruct.magnetometerArray, 3);
-}
-float PmmImu::getBarometer()
-{
-    return mPmmImuStruct.pressure;
-}
-float PmmImu::getAltitudeBarometer()
-{
-    return mPmmImuStruct.altitude;
-}
-float PmmImu::getBarometerTemperature()
-{
-    return mPmmImuStruct.temperatureBmp;
-}
-pmmImuStructType PmmImu::getImuStruct()
-{
-    return mPmmImuStruct;
-}
+void  PmmImu::getAccelerometer(float destinationArray[3]) { memcpy(destinationArray, mPmmImuStruct.accelerometerArray, 3); }
+void  PmmImu::getGyroscope    (float destinationArray[3]) { memcpy(destinationArray, mPmmImuStruct.gyroscopeArray,     3); }
+float PmmImu::getMpuTemperature()                         { return mPmmImuStruct.temperatureMpu;                           }
+void  PmmImu::getMagnetometer (float destinationArray[3]) { memcpy(destinationArray, mPmmImuStruct.magnetometerArray,  3); }
+float PmmImu::getBarometer           ()                   { return mPmmImuStruct.pressure;                                 }
+float PmmImu::getAltitudeBarometer   ()                   { return mPmmImuStruct.altitude;                                 }
+float PmmImu::getBarometerTemperature()                   { return mPmmImuStruct.temperatureBmp;                           }
+pmmImuStructType PmmImu::getImuStruct()                   { return mPmmImuStruct;                                          }
 
-
-
-float* PmmImu::getAccelerometerPtr()
-{
-    return mPmmImuStruct.accelerometerArray;
-}
-float* PmmImu::getGyroscopePtr()
-{
-    return mPmmImuStruct.gyroscopeArray;
-}
-float* PmmImu::getMpuTemperaturePtr()
-{
-    return &mPmmImuStruct.temperatureMpu;
-}
-float* PmmImu::getMagnetometerPtr()
-{
-    return mPmmImuStruct.magnetometerArray;
-}
-float* PmmImu::getBarometerPtr()
-{
-    return &mPmmImuStruct.pressure;
-}
-float* PmmImu::getAltitudeBarometerPtr()
-{
-    return &mPmmImuStruct.altitude;
-}
-float* PmmImu::getBarometerTemperaturePtr()
-{
-    return &mPmmImuStruct.temperatureBmp;
-}
-pmmImuStructType* PmmImu::getImuStructPtr()
-{
-    return &mPmmImuStruct;
-}
+float* PmmImu::getAccelerometerPtr       () { return mPmmImuStruct.accelerometerArray; }
+float* PmmImu::getGyroscopePtr           () { return mPmmImuStruct.gyroscopeArray;     }
+float* PmmImu::getMpuTemperaturePtr      () { return &mPmmImuStruct.temperatureMpu;    }
+float* PmmImu::getMagnetometerPtr        () { return mPmmImuStruct.magnetometerArray;  }
+float* PmmImu::getBarometerPtr           () { return &mPmmImuStruct.pressure;          }
+float* PmmImu::getAltitudeBarometerPtr   () { return &mPmmImuStruct.altitude;          }
+float* PmmImu::getBarometerTemperaturePtr() { return &mPmmImuStruct.temperatureBmp;    }
+pmmImuStructType* PmmImu::getImuStructPtr() { return &mPmmImuStruct;                   }

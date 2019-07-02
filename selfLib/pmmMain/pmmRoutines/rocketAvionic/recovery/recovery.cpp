@@ -5,6 +5,6 @@
  * and Marcelo Maronas
  * Minerva Rockets, UFRJ, Rio de Janeiro - Brazil */
 
-#include "pmmRecovery/pmmRecovery.h"
+#include "pmmRoutines/rocketAvionic/recovery/recovery.h"
 
 //int updateRec

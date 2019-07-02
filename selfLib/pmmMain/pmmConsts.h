@@ -9,6 +9,12 @@
 #include <Arduino.h>    // For LED_BUILTIN define
 
 
+// =======================================================================
+//  Routine
+// =======================================================================
+    #define PMM_ROUTINE_ROCKET_AVIONIC                      0
+
+    #define PMM_SYSTEM_ROUTINE     PMM_ROUTINE_ROCKET_AVIONIC
 
 // =======================================================================
 //  General
