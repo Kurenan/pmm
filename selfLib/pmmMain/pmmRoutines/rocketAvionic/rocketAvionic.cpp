@@ -28,8 +28,7 @@ RoutineRocketAvionic::RoutineRocketAvionic() {}
 void RoutineRocketAvionic::init()
 {
     mGpsIsFirstAltitude = mGpsIsFirstCoord = mGpsIsFirstDate = true;
-    mSessionId          = 0; // Later, use the EEPROM.
-    mMainLoopCounter    = 0;
+    mSessionId          = mMainLoopCounter = 0;
     mMillis             = millis();
 
     mPmmTelemetry.init();
@@ -44,23 +43,20 @@ void RoutineRocketAvionic::init()
     mPmmModuleMessageLog.init(&mMainLoopCounter, &mPmmTelemetry, &mPmmSd); // PmmModuleMessageLog
     mPmmPortsReception.init(&mPmmModuleDataLog, &mPmmModuleMessageLog);    // PmmPortsReception
 
+    recovery0MillisRemaining = recovery1MillisRemaining = 0;
+
     mMillis = millis(); // Again!
 }
 
 void RoutineRocketAvionic::update()
 {
+    if (recovery0MillisRemaining)
+        recovery0MillisRemaining -= (recovery0MillisRemaining < (millis() - mMillis)? ;
+    uint32_t recovery1MillisRemaining;
     switch(mSubRoutine)
     {
         case SubRoutines::AwaitingGps:
             sR_AwaitingGps();   break;
-        case SubRoutines::Ready:
-            sR_Ready();         break;
-        case SubRoutines::Flying:
-            sR_Flying();        break;
-        case SubRoutines::OrderedDrogue:
-            sR_OrderedDrogue(); break;
-        case SubRoutines::OrderedMain:
-            sR_OrderedMain();   break;
         case SubRoutines::Landed:
             sR_Landed();        break;
     }
@@ -96,21 +92,7 @@ void RoutineRocketAvionic::sR_AwaitingGps()
     mPmmTelemetry.updateTransmission();
 }
 
-void RoutineRocketAvionic::sR_Ready()
-{
-}
 
-void RoutineRocketAvionic::sR_Flying()
-{
-}
-
-void RoutineRocketAvionic::sR_OrderedDrogue()
-{
-}
-
-void RoutineRocketAvionic::sR_OrderedMain()
-{
-}
 
 void RoutineRocketAvionic::sR_Landed()
 {

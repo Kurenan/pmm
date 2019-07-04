@@ -2,65 +2,46 @@
 #include <circularArray.h>
 #include <stdlib.h> // For realloc.
 
-template <class T>
-CircularArray<T>::CircularArray()
+template <class T> CircularArray<T>::CircularArray ()              { reset(); }
+template <class T> CircularArray<T>::CircularArray (int maxLength) { realloc(maxLength); }
+template <class T> CircularArray<T>::~CircularArray()              { free(mArray); }
+// Resets the array.
+template <class T> void CircularArray<T>::reset()    { mStartIndex = mCurrentLength = 0; }
+// Changes the array length. Returns true if successful, false otherwise.
+// Reset is called if the realloc is successful, as I won't need rearraging right now.
+template <class T> bool CircularArray<T>::realloc(int maxLength)
 {
-    mArray = NULL; // For realloc.
-}
+    if (!(T*) realloc(mArray, maxLength * sizeof(T)) return false;
 
-template <class T>
-CircularArray<T>::CircularArray(int16_t maxLength)
-{
-    mArray = NULL; // For realloc.
-    init(maxLength);
-}
-
-template <class T>
-CircularArray<T>::~CircularArray()
-{
-    free(mArray);
-}
-
-template <class T>
-void CircularArray<T>::init(int16_t maxLength)
-{
-    mArray = (T*) realloc(maxLength * sizeof(T));
     mMaxLength = maxLength;
-    mCurrentLength = 0;
+    reset();
+    return true;
 }
 
-// Resets the mCurrentLength, and returns it (before did it)
-template <class T>
-int16_t CircularArray<T>::clear() { mCurrentLength = 0; }
 
-// Returns how many positions are available.
-template <class T>
-int16_t CircularArray<T>::available() { return mMaxLength - mCurrentLength; }
-
+// Returns how many positions are available. 0 means is full.
+template <class T> int CircularArray<T>::available() { return mMaxLength - mCurrentLength; }
 // Returns the current used length.
-template <class T>
-int16_t CircularArray<T>::length() { return mCurrentLength; }
-
+template <class T> int CircularArray<T>::length()    { return mCurrentLength; }
 // Returns the total usable length.
-template <class T>
-int16_t CircularArray<T>::maxLength() { return mMaxLength; }
+template <class T> int CircularArray<T>::maxLength() { return mMaxLength; }
 
-// Adds an item to the end. Returns the index where it entered. Negative if error.
-template <class T>
-int16_t CircularArray<T>::push(T item)
+
+// Adds an item to the end, if there is available space.
+template <class T> int CircularArray<T>::push(T item)
 {
-    if (mMaxLength > 0 && mCurrentLength < mMaxLength)
-        return -1;
+    if (!mMaxLength) return -1;
+    if (mCurrentLength >= mMaxLength) return -2;
     
-    mArray[getCurrentIndex] = item;
+    mArray[getLastItemIndex()] = item;
     mCurrentLength++;
+    return 0;
 }
-
 // Adds an item to the end even if the circular array is full, so the previous first item will
-// be removed for this new one. Returns the index where it entered. Negative if error.
-template <class T>
-int16_t CircularArray<T>::forcePush(T item)
+// be removed for this new one.
+template <class T> int CircularArray<T>::forcePush(T item)
 {
+    if (!mMaxLength) return -1;
     if (mMaxLength > 0 && mCurrentLength < mMaxLength)
         shift();
 
@@ -68,50 +49,52 @@ int16_t CircularArray<T>::forcePush(T item)
 }
 
 // Removes the last item. Returns the index where it was. Negative if error. Returns by the arg the popped item.
-template <class T>
-int16_t CircularArray<T>::pop(T *item)
+template <class T> int CircularArray<T>::pop(T *item)
 {
-    if (!mCurrentLength)
-        return -1;
-    
-    int16_t index = getCurrentIndex();
-
-    *item = mArray[index];
+    if (!mCurrentLength) return -1;
+    if (item)
+        *item = mArray[getLastItemIndex()];
 
     mCurrentLength--;
 
-    return index;
+    return 0;
 }
 
 // Removes the first item. Returns the index where it was. Negative if error. Returns by the arg the shifted item.
-template <class T>
-int16_t CircularArray<T>::shift(T *item)
+template <class T> int CircularArray<T>::shift(T *item)
 {
-    if (!mCurrentLength)
-        return -1;
+    if (!mCurrentLength) return -1;
+    if (item)
+        *item = mArray[mStartIndex];
 
-    int16_t index = mStartIndex;
-
-    *item = mArray[index];
-
-    mStartIndex = fixIndex(mStartIndex++);
-
-    return index;
+    mStartIndex++
+    return 0;
 }
 
-template <class T>
-int16_t CircularArray<T>::getCurrentIndex() { return fixIndex(mStartIndex + mCurrentLength) }
-
-template <class T>
-int16_t CircularArray<T>::fixIndex(int16_t index)
+// Returns the item, relative to the first item.
+// Ex real array is [,,,7,8,9,]. getItem(0) returns 7, getItem(2) returns 9, getItem(3) returns 7 again (it cycles!).
+// getItem(-1) retuns 9, getItem(-3) returns 7.
+template <class T> T CircularArray<T>::getItem(int index)
 {
-    if (!mTotalLength)
-        return -1;
+    return fixIndex(mStartIndex + index)
+}
 
-    index = index % mTotalLength;
 
-    if (index < 0)
-        return (mTotalLength + index); // As the index is negative, this func will return totalLength - index.
+// Returns the index of the last push()ed item.
+template <class T> int CircularArray<T>::getLastIndex()
+{
+    return fixIndex(mStartIndex + mCurrentLength)
+}
+
+// Translates negative indexes, and cicles values that are beyond the current array length.
+template <class T> int CircularArray<T>::fixIndex(int index)
+{
+    if (!mTotalLength) return -1;
+
+    index %= mTotalLength;
+
+    if (index < 0) // 
+        return (mTotalLength + index);
 
     if (index >= mTotalLength)
         return (mTotalLength - index);

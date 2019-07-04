@@ -24,8 +24,6 @@
 #include "pmmModules/messageLog/messageLog.h"
 #include "pmmModules/portsReception.h"
 
-#include "pmmRoutines/rocketAvionic/recovery/recovery.h"
-
 
 
 class RoutineRocketAvionic
@@ -41,14 +39,10 @@ public:
 
 private:
 
-    enum class SubRoutines {AwaitingGps, Ready, Flying, OrderedDrogue, OrderedMain, Landed};
+    enum class SubRoutines {FullActive, Landed};
     SubRoutines  mSubRoutine;
     void setSubRoutine(SubRoutines subRoutine);
-    void sR_AwaitingGps();
-    void sR_Ready();
-    void sR_Flying();
-    void sR_OrderedDrogue();
-    void sR_OrderedMain();
+    void sR_FullActive();
     void sR_Landed();
 
 
@@ -69,6 +63,9 @@ private:
     bool mGpsIsFirstAltitude;
     bool mGpsIsFirstCoord;
     bool mGpsIsFirstDate;
+
+    uint32_t recovery0MillisRemaining;
+    uint32_t recovery1MillisRemaining;
 };
 
 #endif

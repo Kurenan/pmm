@@ -3,20 +3,17 @@
 #include <measuresAnalyzer.h>
 
 
-MeasuresAnalyzer::MeasuresAnalyzer(uint32_t minMicrosBetween, uint32_t maxMicrosBetween,
-                                   uint32_t microsWindow, float positivesPercentToTrigger,
-                                   CheckType checkType, Relation relation, float checkValue, Time perTimeUnit)
+MeasuresAnalyzer::MeasuresAnalyzer(uint32_t minMicrosBetween, uint32_t maxMicrosBetween, uint32_t microsWindow)
 {
     mMinMicrosBetween = minMicrosBetween;
     mMaxMicrosBetween = maxMicrosBetween;
     mMicrosWindow     = microsWindow;
 
-    mCircularArray    = new CircularArray<Measure>(minMicrosBetween * microsWindow);
+    mCircularArray.realloc(minMicrosBetween * microsWindow + ADDITIONAL_LENGTH); // Create the circular array, as it initialized without size.
 }
 
-MeasuresAnalyzer::~MeasuresAnalyzer()
+void MeasuresAnalyzer::addMeasure(float measure)
 {
-    delete mCircularArray;
 }
 
 bool MeasuresAnalyzer::addMeasureAndCheck(float measure)
@@ -46,22 +43,6 @@ bool MeasuresAnalyzer::addMeasureAndCheck(float measure)
     return false;
 }
 
-
-
-uint16_t MeasuresAnalyzer::getCurrentIndex()
+void MeasuresAnalyzer::calculateChecks()
 {
-    uint16_t currentIndex = mStartIndex + mCurrentLength;
-    return getIndex(currentIndex, mTotalLength);
 }
-
-// Removes the first measure from the array.
-bool MeasuresAnalyzer::shiftMeasure()
-{
-    if (!mCurrentLength)
-        return false;
-
-    mStartIndex = getIndex(mStartIndex + 1);
-    mCurrentLength--;
-}
-
-// Will return 0xFFFF if 

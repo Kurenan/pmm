@@ -10,11 +10,11 @@
 #include <stdint.h> // For uint32_t.
 #include <circularArray.h>
 
-// The trigger can be readden as
-// [truePercentToTrigger]% of [CheckType] [AreRelationThan] [checkValue] units [perTimeUnit]
-// Ex: "90% of the FirstDerivatives AreGreatherThan 10 units/second"
-// Be careful that the constructor will alloc (mMinTotalMillis / minMillisPerMeasure) * 8 bytes.
-// Be sure that this class suits your needs.
+//
+// Be careful that the constructor will malloc(mMinTotalMillis / minMillisPerMeasure) * 8 bytes.
+
+// Type of measure is float. I could use a template, but most hobbyists don't know it. C++17 gives the possibility of
+//   default template without using <>, but platformIO still uses C++14. And I don't want to use special flags.
 class MeasuresAnalyzer
 {
 public:
@@ -23,31 +23,46 @@ public:
         uint32_t microsDifToNext;
     } Measure;
 
-    enum class CheckType {Values, FirstDerivatives, SecondDerivatives};
+    enum class CheckType {Values, FirstDerivative};
     enum class Relation  {AreLesserThan, AreGreaterThan};
     enum class Time      {DontApply, Second, Millisecond, Microsecond};
 
-    MeasuresAnalyzer(uint32_t minMicrosBetween, uint32_t maxMicrosBetween, uint32_t microsWindow,
-                     float truePercentToTrigger, CheckType checkType, Relation relation, float checkValue, Time perTimeUnit);
+    // 
+    MeasuresAnalyzer(uint32_t minMicrosBetween, uint32_t maxMicrosBetween, uint32_t microsWindow, int numberConditions);
+                     
     ~MeasuresAnalyzer();
 
+
+    int  addMeasure(float measure);
+
+    // The condition can be readden as
+    // [minPercent]% of [checkType] [relation] [checkValue] units [perTimeUnit]
+    // Ex: "90% of the FirstDerivatives AreGreatherThan 10 units/second"
+    // Returns the condition index. If error, negative value is returned.
+    int  addCondition(float minPercent, CheckType checkType, Relation relation, float checkValue, Time perTimeUnit);
+    bool checkCondition(int conditionIndex);
+
+    // Do both functions above in one.
     bool addMeasureAndCheck(float measure);
     void reset();
 
 private:
+    void calculateChecks();
     int16_t getCurrentIndex();
-    bool     shiftMeasure();
-    int16_t getIndex(uint16_t index, uint16_t maxLength);
 
-    CircularArray<Measure> *mCircularArray;
+    int      mCanCheckCondition;
+    int      mCanFirstDerivative;
 
-    Measure *mArray;
+    CircularArray<Measure> mCircularArray;
+
     uint32_t mLastMicros;
     uint32_t mMicrosWindow;
     uint32_t mCurrentTotalMicros;
 
     uint32_t mMinMicrosBetween;
     uint32_t mMaxMicrosBetween;
+
+    static constexpr uint8_t ADDITIONAL_LENGTH = 2;
 };
 
 #endif

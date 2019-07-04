@@ -4,63 +4,59 @@
 
 #include <stdint.h> // for uint16_t
 
-// This won't create the array. You must provide it.
 template <class T>
 class CircularArray
 {
 public:
 
-    // You will need to call init.
+    // The array isn't created when using this constructor. Call realloc() after.
     CircularArray();
-
     // If you construct the object with this, there is no need to call init().
-    CircularArray(int16_t maxLength);
-
+    CircularArray(int maxLength = 0);
     // To free the array.
     ~CircularArray();
+    // Resets the array.
+    void reset();
+    // Changes the array length. Returns true if successful, false otherwise.
+    // Reset is called if the realloc is successful, as I won't need rearraging right now.
+    bool realloc(int maxLength);
 
-    // You can rearrange the size of the array with this. For now, it won't work properly. This is only to init after
-    // using the constructor without args.
-    void init(int16_t maxLength);
 
-    // Resets the mCurrentLength, and returns it (before did it)
-    int16_t clear();
+    // Returns the item, relative to the first item.
+    // Ex real array is [,,,7,8,9,]. getItem(0) returns 7, getItem(2) returns 9, getItem(3) returns 7 again (it cycles!).
+    // getItem(-1) retuns 9, getItem(-3) returns 7.
+    T    getItem(int index);
 
     // Returns how many positions are available.
-    int16_t available();
-
+    int  available();
     // Returns the current used length.
-    int16_t length();
-
+    int  length();
     // Returns the total usable length.
-    int16_t maxLength();
+    int  maxLength();
 
     // Adds an item to the end. Returns the index where it entered. Negative if error.
-    int16_t push(T item);
+    int  push(T item);
+    // Adds an item to the end even if the circular array is full, in this case, removing the  so the previous first item will
+    // be removed for this new one. Returns error code. 0 is ok.
+    int  forcePush(T item);
 
-    // Adds an item to the end even if the circular array is full, so the previous first item will
-    // be removed for this new one. Returns the index where it entered. Negative if error.
-    int16_t forcePush(T item);
+    // Removes the last item. Returns error code. 0 is ok. Returns by the arg the popped item.
+    int  pop(T *item = NULL);
+    // Removes the first item. Returns error code. 0 is ok. Returns by the arg the shifted item.
+    int  shift(T *item = NULL);
 
-    // Removes the last item. Returns the index where it was. Negative if error. Returns by the arg the popped item.
-    int16_t pop(T *item);
-
-    // Removes the first item. Returns the index where it was. Negative if error. Returns by the arg the shifted item.
-    int16_t shift(T *item);
-
-
-    int16_t getCurrentIndex();
-
-    // Fixes the given index.
-    int16_t fixIndex(int16_t index);
 
 private:
 
-    T mArray[];
-    int16_t mStartIndex;
-    int16_t mCurrentLength;
-    int16_t mMaxLength;
+    int getLastIndex();
 
+    // Fixes the given index.
+    int fixIndex(int index);
+
+    T   mArray[] = NULL;
+    int mStartIndex;
+    int mCurrentLength;
+    int mMaxLength = 0;
 };
 
 #endif
