@@ -1,8 +1,15 @@
 // By Henrique Bruno Fantauzzi de Almeida (aka SrBrahma)
 // Code to analyse measures, to know if a percentage of the measurements pass a condition,
-// which can be the values itself, the first or second derivative; that are lesser or greater than a given value.
+// which can be the values itself or the first derivative, that are lesser or greater than a given value.
 // This was done in order to detect a rocket liftoff or its descending, using barometer data.
-// After thinking about it in almost 2 years, and after several methods, I think this is the best I have came up with.
+// The first 1-2 values may be discarded, as to get the speed (first derivative), for example, we need
+// 2 values to compare.
+
+// If the new measure is entered with a time difference lesser than the minMicrosBetween, it is discarded.
+// If the new measure is entered with a time difference greater than the maxMicrosBetween, it is added, but,
+//   won't count towards the positives conditions check count.
+
+// After thinking about it for almost 2 years, and after several methods, I think this is the best I have came up with.
 
 #ifndef MEASURES_ANALYZER_h
 #define MEASURES_ANALYZER_h
@@ -18,20 +25,26 @@
 class MeasuresAnalyzer
 {
 public:
+    enum class CheckType {Values, FirstDerivative};
+    enum class Relation  {AreLesserThan, AreGreaterThan};
+    enum class Time      {DontApply, Second, Millisecond, Microsecond};
+
     typedef struct {
         float    value;
         uint32_t microsDifToNext;
     } Measure;
 
-    enum class CheckType {Values, FirstDerivative};
-    enum class Relation  {AreLesserThan, AreGreaterThan};
-    enum class Time      {DontApply, Second, Millisecond, Microsecond};
+    typedef struct {
+        float     minPercent;
+        CheckType checkType;
+        Relation  relation;
+        float     checkValue;
+        Time      perTimeUnit;
+        uint32_t  currentPositives;
+    } Condition;
 
-    // 
-    MeasuresAnalyzer(uint32_t minMicrosBetween, uint32_t maxMicrosBetween, uint32_t microsWindow, int numberConditions);
-                     
+    MeasuresAnalyzer(uint32_t minMicrosBetween, uint32_t maxMicrosBetween, uint32_t microsWindow);
     ~MeasuresAnalyzer();
-
 
     int  addMeasure(float measure);
 
@@ -47,8 +60,10 @@ public:
     void reset();
 
 private:
-    void calculateChecks();
+    void    calculateChecks();
     int16_t getCurrentIndex();
+
+    uint8_t  mCurrentConditions;
 
     int      mCanCheckCondition;
     int      mCanFirstDerivative;

@@ -1,5 +1,6 @@
 #include <Arduino.h> // For malloc()
 #include <circularArray.h>
+#include <generalUnitsOps.h>
 #include <measuresAnalyzer.h>
 
 
@@ -12,37 +13,26 @@ MeasuresAnalyzer::MeasuresAnalyzer(uint32_t minMicrosBetween, uint32_t maxMicros
     mCircularArray.realloc(minMicrosBetween * microsWindow + ADDITIONAL_LENGTH); // Create the circular array, as it initialized without size.
 }
 
-void MeasuresAnalyzer::addMeasure(float measure)
+int MeasuresAnalyzer::addMeasure(float measure)
 {
-}
+    uint32_t nowMicros     = micros();
+    uint32_t microsBetween = timeDifference(nowMicros, mLastMicros);
 
-bool MeasuresAnalyzer::addMeasureAndCheck(float measure)
-{
-    uint32_t nowMicros = micros();
+    if (microsBetween < mMinMicrosBetween)
+        return 1;
 
-    if (mCircularArray->length > 0)
-    {
-        uint32_t microsBetween = nowMicros - mLastMicros;
-
-        // If the time between measures is invalid, ignore the measure.
-        if ((microsBetween < mMinMicrosBetween) || (microsBetween > mMaxMicrosBetween))
-            return 1;
-
-        mArray[getCurrentIndex()] = {measure, microsBetween};
-
-        mCurrentTotalMicros += microsBetween;
-
-        while (mCurrentTotalMicros > mMicrosWindow)
-        {
-            mCurrentTotalMicros -= mArray[mStartIndex].microsDifToNext;
-
-        }
-    }
+    mCircularArray.forcePush({measure, nowMicros});
 
     mLastMicros = nowMicros;
-    return false;
+
+    calculateChecks();
+    return 0;
 }
 
 void MeasuresAnalyzer::calculateChecks()
 {
+    for (int i = 0; i < mCurrentConditions; i++)
+    {
+        
+    }
 }

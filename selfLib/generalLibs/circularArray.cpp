@@ -33,19 +33,22 @@ template <class T> int CircularArray<T>::push(T item)
     if (!mMaxLength) return -1;
     if (mCurrentLength >= mMaxLength) return -2;
     
-    mArray[getLastItemIndex()] = item;
+    mArray[getLastIndex()] = item;
     mCurrentLength++;
     return 0;
 }
-// Adds an item to the end even if the circular array is full, so the previous first item will
-// be removed for this new one.
+
+// Adds an item to the end even if the circular array is full, in this case, removing the first item in the array (shift()).
+// Returns 0 if pushed without shifting. 1 if shifted. Negative if error.
 template <class T> int CircularArray<T>::forcePush(T item)
 {
     if (!mMaxLength) return -1;
-    if (mMaxLength > 0 && mCurrentLength < mMaxLength)
+    if (mCurrentLength == mMaxLength)
+    {
         shift();
-
-    push(item);
+        return 1;
+    }
+    return push(item);
 }
 
 // Removes the last item. Returns the index where it was. Negative if error. Returns by the arg the popped item.
@@ -53,7 +56,7 @@ template <class T> int CircularArray<T>::pop(T *item)
 {
     if (!mCurrentLength) return -1;
     if (item)
-        *item = mArray[getLastItemIndex()];
+        *item = mArray[getLastIndex()];
 
     mCurrentLength--;
 
@@ -67,7 +70,7 @@ template <class T> int CircularArray<T>::shift(T *item)
     if (item)
         *item = mArray[mStartIndex];
 
-    mStartIndex++
+    mStartIndex++;
     return 0;
 }
 
@@ -76,28 +79,29 @@ template <class T> int CircularArray<T>::shift(T *item)
 // getItem(-1) retuns 9, getItem(-3) returns 7.
 template <class T> T CircularArray<T>::getItem(int index)
 {
-    return fixIndex(mStartIndex + index)
+    return fixIndex(mStartIndex + index);
 }
 
 
 // Returns the index of the last push()ed item.
 template <class T> int CircularArray<T>::getLastIndex()
 {
-    return fixIndex(mStartIndex + mCurrentLength)
+    return fixIndex(mStartIndex + mCurrentLength);
 }
 
 // Translates negative indexes, and cicles values that are beyond the current array length.
+// The index argument is absolute (not relative to the mStartIndex). 
 template <class T> int CircularArray<T>::fixIndex(int index)
 {
-    if (!mTotalLength) return -1;
+    if (!mMaxLength) return -1;
 
-    index %= mTotalLength;
+    index %= mCurrentLength;
 
-    if (index < 0) // 
-        return (mTotalLength + index);
+    if (index < 0)
+        return (  index + mCurrentLength);
 
-    if (index >= mTotalLength)
-        return (mTotalLength - index);
+    if (index >= mMaxLength)
+        return (- index + mCurrentLength);
     
     return index;
 }
