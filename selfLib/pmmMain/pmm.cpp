@@ -13,10 +13,8 @@ Pmm::Pmm() {}
 
 void Pmm::init()
 {
-    runExtraCodes(); // No need to comment this function. To disable it, change PMM_EXTRA_CODES_ENABLE on pmmConsts.h
     initDebug();     // No need to comment this function. To disable it, change PMM_DEBUG on pmmConsts.h
-
-
+    runExtraCodes(); // No need to comment this function. To disable it, change PMM_EXTRA_CODES_ENABLE on pmmConsts.h
 
     #if PMM_SYSTEM_ROUTINE == PMM_ROUTINE_ROCKET_AVIONIC
     mRoutineRocketAvionic.init();

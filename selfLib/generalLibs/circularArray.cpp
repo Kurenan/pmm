@@ -1,6 +1,6 @@
 #include <stdint.h>
-#include <circularArray.h>
 #include <stdlib.h> // For realloc.
+#include <circularArray.h>
 
 template <class T> CircularArray<T>::CircularArray ()              { reset(); }
 template <class T> CircularArray<T>::CircularArray (int maxLength) { realloc(maxLength); }
@@ -11,7 +11,7 @@ template <class T> void CircularArray<T>::reset()    { mStartIndex = mCurrentLen
 // Reset is called if the realloc is successful, as I won't need rearraging right now.
 template <class T> bool CircularArray<T>::realloc(int maxLength)
 {
-    if (!(T*) realloc(mArray, maxLength * sizeof(T)) return false;
+    if (!(T*) realloc(mArray, maxLength * sizeof(T))) return false;
 
     mMaxLength = maxLength;
     reset();
