@@ -9,6 +9,8 @@
 // If the new measure is entered with a time difference greater than the maxMicrosBetween, it is added, but,
 //   won't count towards the positives conditions check count.
 
+// The microsWindow will be the same for all conditions you add.
+
 // After thinking about it for almost 2 years, and after several methods, I think this is the best I have came up with.
 
 #ifndef MEASURES_ANALYZER_h
@@ -30,8 +32,8 @@ public:
     enum class Time      {DontApply, Second, Millisecond, Microsecond};
 
     typedef struct {
-        float    value;
-        uint32_t microsDifToNext;
+        float     value;
+        uint32_t  micros;
     } Measure;
 
     typedef struct {
@@ -40,10 +42,10 @@ public:
         Relation  relation;
         float     checkValue;
         Time      perTimeUnit;
-        uint32_t  currentPositives;
+        int       currentPositives;
     } Condition;
 
-    MeasuresAnalyzer(uint32_t minMicrosBetween, uint32_t maxMicrosBetween, uint32_t microsWindow);
+    MeasuresAnalyzer(uint32_t minMicrosBetween, uint32_t maxAvgMicrosBetween, uint32_t microsWindow);
     ~MeasuresAnalyzer();
 
     int  addMeasure(float measure);
@@ -60,24 +62,32 @@ public:
     void reset();
 
 private:
-    void    calculateChecks();
-    int16_t getCurrentIndex();
+    // Removes the oldested measure in the circular array. Also, it decreases the Condition.currentPositives, if the
+    // removed measure was a condition positive.
+    void      removeOldestMeasure();
 
-    uint8_t  mCurrentConditions;
+    // 
+    void      calculateChecks(int removedXItems);
+    int16_t   getCurrentIndex();
 
-    int      mCanCheckCondition;
-    int      mCanFirstDerivative;
+
+    Condition mConditions[];
+    uint8_t   mCurrentConditions;
+
+    int       mCanCheckCondition;
+    int       mCanFirstDerivative;
 
     CircularArray<Measure> mCircularArray;
 
-    uint32_t mLastMicros;
-    uint32_t mMicrosWindow;
-    uint32_t mCurrentTotalMicros;
+    uint32_t  mMicrosWindow;
 
-    uint32_t mMinMicrosBetween;
-    uint32_t mMaxMicrosBetween;
+    uint32_t  mMinMicrosBetween;
+    uint32_t  mMaxAvgMicrosBetween;
+    unsigned  mMinPoints;
 
     static constexpr uint8_t ADDITIONAL_LENGTH = 2;
+
+    bool      mIsWorking;
 };
 
 #endif

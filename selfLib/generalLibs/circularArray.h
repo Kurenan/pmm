@@ -1,18 +1,19 @@
+// By Henrique Bruno Fantauzzi de Almeida (aka SrBrahma)
+
 #ifndef CIRCULAR_ARRAY_h
 #define CIRCULAR_ARRAY_h
 
 
 #include <stdint.h> // for uint16_t
 
+// This must always allow indexing out of range, using getItemByXYZ. Ex: "a = [5,6,7]. a[0] is 5, a[3] is 5, a[-3] is 5".
 template <class T>
 class CircularArray
 {
 public:
-
-    // The array isn't created when using this constructor. Call realloc() after.
-    CircularArray();
-    // If you construct the object with this, there is no need to call init().
-    CircularArray(int maxLength);
+    // Creates the object. If the maxLength is ommited or equal to 0, you will need to call ThEoBjEcT.realloc(length)
+    // before using the object.
+    CircularArray(int maxLength = 0);
     // To free the array.
     ~CircularArray();
     // Resets the array.
@@ -22,10 +23,35 @@ public:
     bool realloc(int maxLength);
 
 
-    // Returns the item, relative to the first item.
-    // Ex real array is [,,,7,8,9,]. getItem(0) returns 7, getItem(2) returns 9, getItem(3) returns 7 again (it cycles!).
-    // getItem(-1) retuns 9, getItem(-3) returns 7.
-    T    getItem(int index);
+    // Returns the item of the circular array, relative to the first item.
+    // Ex: Array is [9,,,6,7,8]. First item is 6, last is 9. (gI = getItem)
+    // gI(0) returns 6, gI(2) returns 8, gI(3) returns 9. gI(4) returns 6 again (it cycles!).
+    // gI(-1) retuns 9, gI(-2) returns 8.
+    // Only use this if you are sure that it won't have any problem. Else, use the function
+    // that returns the item by the second argument, and the error code as normal return.
+    T    getItemByFirst(int index);
+    // Returns by the second argument the item of the circular array, relative to the first item.
+    // Ex: Array is [9,,,6,7,8]. First item is 6, last is 9. (gI = getItem)
+    // gI(0) returns (by the 2nd arg) 6, gI(2) returns 8, gI(3) returns 9. gI(4) returns 6 again (it cycles!).
+    // gI(-1) retuns 9, gI(-2) returns 8.
+    // The real return, returns 0 if success. Negative if error.
+    int  getItemByFirst(int index, T *returnItem);
+
+    // Returns the item of the circular array, relative to the last item.
+    // This functions is the same as the getItemByFirst(), but the index is substracted by 1.
+    // Ex: Array is [9,,,6,7,8]. Last item is 9, first is 6.
+    // gI(0) returns 9, gI(-1) returns 8, gI(-3) returns 6. gI(-4) returns 9 again (it cycles!).
+    // gI(1) retuns 6, gI(2) returns 8.
+    // Only use this if you are sure that it won't have any problem. Else, use the function
+    // that returns the item by the second argument, and the error code as normal return.
+    T    getItemByLast(int index);
+    // Returns by the second argument the item of the circular, relative to the last item.
+    // This functions is the same as the getItemByFirst(), but the index is substracted by 1.
+    // Ex: Array is [9,,,6,7,8]. Last item is 9, first is 6.
+    // gI(0) returns (by the 2nd arg) 9, gI(-1) returns 8, gI(-3) returns 6. gI(-4) returns 9 again (it cycles!).
+    // gI(1) retuns 6, gI(2) returns 8.
+    // The real return, returns 0 if success. Negative if error.
+    int  getItemByLast(int index, T *returnItem);
 
     // Returns how many positions are available.
     int  available();
@@ -42,11 +68,11 @@ public:
     // Returns 0 if pushed without shifting. 1 if shifted. Negative if error.
     int  forcePush(T item);
 
-    // Removes the last item. 
+    // Removes the last item. If given a pointer, the item will be copied to it.
     // Returns 0 if popped successfully. Negative if error.
     int  pop(T *item = NULL);
 
-    // Removes the first item.
+    // Removes the first item. If given a pointer, the item will be copied to it.
     // Returns 0 if shifted successfully, Negative if error.
     int  shift(T *item = NULL);
 
@@ -58,10 +84,10 @@ private:
     // Fixes the given index.
     int fixIndex(int index);
 
-    T   mArray[] = NULL;
-    int mStartIndex;
-    int mCurrentLength;
-    int mMaxLength = 0;
+    T   mArray[]       = NULL;
+    int mMaxLength     = 0;
+    int mStartIndex    = 0;
+    int mCurrentLength = 0;
 };
 
 #endif

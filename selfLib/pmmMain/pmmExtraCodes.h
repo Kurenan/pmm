@@ -46,3 +46,5 @@
     }
 
 #endif // End of #if PMM_EXTRA_CODES_ENABLE
+
+#endif // End of #ifndef PMM_EXTRA_CODES_h

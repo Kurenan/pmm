@@ -2,16 +2,32 @@
 #include <stdlib.h> // For realloc.
 #include <circularArray.h>
 
-template <class T> CircularArray<T>::CircularArray ()              { reset(); }
-template <class T> CircularArray<T>::CircularArray (int maxLength) { realloc(maxLength); }
-template <class T> CircularArray<T>::~CircularArray()              { free(mArray); }
-// Resets the array.
-template <class T> void CircularArray<T>::reset()    { mStartIndex = mCurrentLength = 0; }
+// Creates the object. If the maxLength is ommited or equal to 0, you will need to call ThEoBjEcT.realloc(length)
+// before using the object.
+template <class T> CircularArray<T>::CircularArray (int maxLength)
+{
+    if (maxLength == 0)
+        reset();
+    else
+        realloc(maxLength);
+}
+template <class T> CircularArray<T>::~CircularArray()
+{
+    free(mArray);
+}
+
+// Resets the array. But won't free() the already allocated array.
+template <class T> void CircularArray<T>::reset()
+{
+    mStartIndex = mCurrentLength = 0;
+}
+
 // Changes the array length. Returns true if successful, false otherwise.
 // Reset is called if the realloc is successful, as I won't need rearraging right now.
 template <class T> bool CircularArray<T>::realloc(int maxLength)
 {
-    if (!(T*) realloc(mArray, maxLength * sizeof(T))) return false;
+    if (!(T*) realloc(mArray, maxLength * sizeof(T)))
+        return false;
 
     mMaxLength = maxLength;
     reset();
@@ -39,7 +55,6 @@ template <class T> int CircularArray<T>::push(T item)
 }
 
 // Adds an item to the end even if the circular array is full, in this case, removing the first item in the array (shift()).
-// Returns 0 if pushed without shifting. 1 if shifted. Negative if error.
 template <class T> int CircularArray<T>::forcePush(T item)
 {
     if (!mMaxLength) return -1;
@@ -51,7 +66,7 @@ template <class T> int CircularArray<T>::forcePush(T item)
     return push(item);
 }
 
-// Removes the last item. Returns the index where it was. Negative if error. Returns by the arg the popped item.
+// Removes the last item. If given a pointer, the item will be copied to it.
 template <class T> int CircularArray<T>::pop(T *item)
 {
     if (!mCurrentLength) return -1;
@@ -63,7 +78,7 @@ template <class T> int CircularArray<T>::pop(T *item)
     return 0;
 }
 
-// Removes the first item. Returns the index where it was. Negative if error. Returns by the arg the shifted item.
+// Removes the first item. If given a pointer, the item will be copied to it.
 template <class T> int CircularArray<T>::shift(T *item)
 {
     if (!mCurrentLength) return -1;
@@ -74,13 +89,36 @@ template <class T> int CircularArray<T>::shift(T *item)
     return 0;
 }
 
-// Returns the item, relative to the first item.
-// Ex real array is [,,,7,8,9,]. getItem(0) returns 7, getItem(2) returns 9, getItem(3) returns 7 again (it cycles!).
-// getItem(-1) retuns 9, getItem(-3) returns 7.
-template <class T> T CircularArray<T>::getItem(int index)
+
+// Returns the circular array item, relative to the first item.
+template <class T> T CircularArray<T>::getItemByFirst(int index)
 {
-    return fixIndex(mStartIndex + index);
+    index = fixIndex(mStartIndex + index);
+    if (index < 0) return 0; // Avoids using negative index on the array access.
+    return mArray[index];
 }
+// Returns by the second arg, the circular array item, relative to the first item.
+template <class T> int CircularArray<T>::getItemByFirst(int index, T *returnItem)
+{
+    if (!returnItem)     return -1;
+    if (!mMaxLength)     return -2;
+    if (!mCurrentLength) return -3;
+    *returnItem = getItemByFirst(index);
+    return 0;
+}
+
+// Returns the item of the circular array, relative to the last item.
+template <class T> T CircularArray<T>::getItemByLast(int index)
+{
+    return getItemByFirst(index - 1);
+}
+// Returns by the second arg, the circular array item, relative to the last item.
+template <class T> int CircularArray<T>::getItemByLast(int index, T *returnItem)
+{
+    return getItemByFirst(index - 1, returnItem);
+}
+
+
 
 
 // Returns the index of the last push()ed item.

@@ -88,7 +88,6 @@ public:
 private:
 
     pmmImuStructType mPmmImuStruct;
-    //Plotter mPlotter;
 
     // MPU
     MPU6050  mMpu;
@@ -99,13 +98,6 @@ private:
     BMP085   mBarometer;
     double   mReferencePressure;
     int      mBarometerIsWorking;
-    uint32_t mBarometerLastMillis;
-    SimpleKalmanFilter mAltitudeKalmanFilter, mAltitudeKalmanFilter2;
-
-    float    mFiltered2;
-    float    mSemiFilteredAltitude;
-    uint32_t mFilteredAltitudeLastMillis;
-    // -=-=-=-=-=-
 
     // Magnetometer
     HMC5883L mMagnetometer;

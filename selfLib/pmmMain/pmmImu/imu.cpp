@@ -6,20 +6,15 @@
 #include <MPU6050.h>
 #include <HMC5883L.h>
 #include <Adafruit_BMP085_U.h>
-#include <SimpleKalmanFilter.h>
-#include <Plotter.h>
+#include <generalUnitsOps.h> // For coord32ToFloat()
 
 #include "pmmConsts.h"
 #include "pmmDebug.h"
-#include "pmmUnits.h" // For coord32ToFloat()
+
 #include "pmmImu/imu.h"
 
 
-PmmImu::PmmImu()
-    : mAltitudeKalmanFilter (5, 5, 0.035),
-      mAltitudeKalmanFilter2(5, 5, 0.035)
-{
-}
+PmmImu::PmmImu() {}
 
 int  PmmImu::init()
 {
